@@ -68,7 +68,7 @@ var (
 )
 
 // ToPostActions returns the poll as a message
-func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string) []*model.SlackAttachment {
+func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string, convert IDToNameConverter) []*model.SlackAttachment {
 	localizer := bundle.GetServerLocalizer()
 	numberOfVotes := 0
 	actions := []*model.PostAction{}
@@ -154,14 +154,14 @@ func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string) 
 	return []*model.SlackAttachment{{
 		AuthorName: authorName,
 		Title:      p.Question,
-		Text:       p.makeAdditionalText(bundle, numberOfVotes),
+		Text:       p.makeAdditionalText(bundle, numberOfVotes, convert),
 		Actions:    actions,
 	}}
 }
 
 // makeAdditionalText make descriptions about poll
 // This method returns markdown text, because it is used for SlackAttachment.Text field.
-func (p *Poll) makeAdditionalText(bundle *utils.Bundle, numberOfVotes int) string {
+func (p *Poll) makeAdditionalText(bundle *utils.Bundle, numberOfVotes int, convert IDToNameConverter) string {
 	localizer := bundle.GetServerLocalizer()
 	/*	var settingsText []string
 		if p.Settings.Anonymous {
@@ -189,10 +189,15 @@ func (p *Poll) makeAdditionalText(bundle *utils.Bundle, numberOfVotes int) strin
 	for i, option := range p.AnswerOptions {
 		votesPerAnswer[i].Answer = option.Answer
 		votesPerAnswer[i].NumVotes = len(option.Voter)
-		votesPerAnswer[i].RecentVoters = option.Voter[:3]
+		if votesPerAnswer[i].NumVotes > 3 {
+			votesPerAnswer[i].RecentVoters = option.Voter[:3]
+		} else {
+			votesPerAnswer[i].RecentVoters = option.Voter
+		}
 
 		for j, voter := range votesPerAnswer[i].RecentVoters {
-			votesPerAnswer[i].RecentVoters[j] = "@" + voter
+			displayName, _ := convert(voter)
+			votesPerAnswer[i].RecentVoters[j] = displayName
 		}
 	}
 	sort.Slice(votesPerAnswer, func(i, j int) bool {

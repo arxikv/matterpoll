@@ -185,7 +185,7 @@ func (p *MatterpollPlugin) executeCommand(args *model.CommandArgs) (string, *mod
 		return p.bundle.LocalizeDefaultMessage(userLocalizer, commandErrorGeneric), nil
 	}
 
-	actions := newPoll.ToPostActions(p.bundle, root.Manifest.Id, displayName)
+	actions := newPoll.ToPostActions(p.bundle, root.Manifest.Id, displayName, p.ConvertUserIDToDisplayName)
 	post := &model.Post{
 		UserId:    p.botUserID,
 		ChannelId: args.ChannelId,
@@ -263,7 +263,7 @@ func (p *MatterpollPlugin) getCreatePollDialog(siteURL, rootID string, l *i18n.L
 		})
 	}
 
-/*	elements = append(elements, model.DialogElement{
+	/*	elements = append(elements, model.DialogElement{
 		DisplayName: "Number of Votes",
 		Name:        "setting-multi",
 		Type:        "text",
