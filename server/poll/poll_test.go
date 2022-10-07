@@ -28,7 +28,7 @@ func TestNewPoll(t *testing.T) {
 			Anonymous:       true,
 			Progress:        true,
 			PublicAddOption: true,
-			MaxVotes:        3,
+			MultiVote:       true,
 		})
 
 		require.Nil(t, err)
@@ -40,7 +40,7 @@ func TestNewPoll(t *testing.T) {
 		assert.Equal(&poll.AnswerOption{Answer: answerOptions[0], Voter: []string{}}, p.AnswerOptions[0])
 		assert.Equal(&poll.AnswerOption{Answer: answerOptions[1], Voter: []string{}}, p.AnswerOptions[1])
 		assert.Equal(&poll.AnswerOption{Answer: answerOptions[2], Voter: []string{}}, p.AnswerOptions[2])
-		assert.Equal(poll.Settings{Anonymous: true, Progress: true, PublicAddOption: true, MaxVotes: 3}, p.Settings)
+		assert.Equal(poll.Settings{Anonymous: true, Progress: true, PublicAddOption: true, MultiVote: true}, p.Settings)
 	})
 
 	t.Run("error, invalid votes setting", func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestNewPoll(t *testing.T) {
 			Anonymous:       true,
 			Progress:        true,
 			PublicAddOption: true,
-			MaxVotes:        4,
+			MultiVote:       true,
 		})
 
 		assert.Nil(p)
@@ -71,7 +71,7 @@ func TestNewPoll(t *testing.T) {
 		question := model.NewRandomString(10)
 		option := model.NewRandomString(10)
 		answerOptions := []string{option, model.NewRandomString(10), option}
-		p, err := poll.NewPoll(creator, question, answerOptions, poll.Settings{MaxVotes: 1})
+		p, err := poll.NewPoll(creator, question, answerOptions, poll.Settings{MultiVote: false})
 
 		assert.Nil(p)
 		assert.NotNil(err)
@@ -91,7 +91,7 @@ func TestNewSettingsFromStrings(t *testing.T) {
 				Anonymous:       false,
 				Progress:        false,
 				PublicAddOption: false,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 		"full settings": {
@@ -101,7 +101,7 @@ func TestNewSettingsFromStrings(t *testing.T) {
 				Anonymous:       true,
 				Progress:        true,
 				PublicAddOption: true,
-				MaxVotes:        4,
+				MultiVote:       true,
 			},
 		},
 		"without votes settings": {
@@ -111,7 +111,7 @@ func TestNewSettingsFromStrings(t *testing.T) {
 				Anonymous:       true,
 				Progress:        true,
 				PublicAddOption: true,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 		"invalid votes setting": {
@@ -121,7 +121,7 @@ func TestNewSettingsFromStrings(t *testing.T) {
 				Anonymous:       false,
 				Progress:        false,
 				PublicAddOption: false,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 		"invalid setting": {
@@ -131,7 +131,7 @@ func TestNewSettingsFromStrings(t *testing.T) {
 				Anonymous:       true,
 				Progress:        true,
 				PublicAddOption: true,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 	} {
@@ -160,7 +160,7 @@ func TestNewSettingsFromSubmission(t *testing.T) {
 				Anonymous:       false,
 				Progress:        false,
 				PublicAddOption: false,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 		"full settings": {
@@ -174,7 +174,7 @@ func TestNewSettingsFromSubmission(t *testing.T) {
 				Anonymous:       true,
 				Progress:        true,
 				PublicAddOption: true,
-				MaxVotes:        4,
+				MultiVote:       true,
 			},
 		},
 		"without votes settings": {
@@ -187,7 +187,7 @@ func TestNewSettingsFromSubmission(t *testing.T) {
 				Anonymous:       false,
 				Progress:        false,
 				PublicAddOption: false,
-				MaxVotes:        1,
+				MultiVote:       false,
 			},
 		},
 	} {
@@ -375,7 +375,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			Index:  0,
@@ -386,7 +386,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			Error:         false,
 			ReturnMessage: false,
@@ -399,7 +399,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			Index:  1,
@@ -410,7 +410,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			Error:         false,
 			ReturnMessage: false,
@@ -423,7 +423,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			Index:  0,
@@ -434,7 +434,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			Error:         false,
 			ReturnMessage: true,
@@ -447,7 +447,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{Progress: true, MaxVotes: 2},
+				Settings: poll.Settings{Progress: true, MultiVote: true},
 			},
 			UserID: "a",
 			Index:  0,
@@ -458,7 +458,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2"},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{Progress: true, MaxVotes: 2},
+				Settings: poll.Settings{Progress: true, MultiVote: true},
 			},
 			Error:         false,
 			ReturnMessage: true,
@@ -471,7 +471,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			Index:  2,
@@ -482,7 +482,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			Error:         false,
 			ReturnMessage: true,
@@ -495,7 +495,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "",
 			Index:  2,
@@ -506,7 +506,7 @@ func TestUpdateVote(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3"},
 				},
-				Settings: poll.Settings{MaxVotes: 2},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			Error:         true,
 			ReturnMessage: false,
@@ -547,7 +547,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3", Voter: []string{"a"}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			ExpectedPoll: poll.Poll{
@@ -557,7 +557,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{}},
 					{Answer: "Answer 3", Voter: []string{}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 		},
 		"Reset success, with no votes": {
@@ -568,7 +568,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{}},
 					{Answer: "Answer 3", Voter: []string{}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			ExpectedPoll: poll.Poll{
@@ -578,7 +578,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{}},
 					{Answer: "Answer 3", Voter: []string{}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 		},
 		"Reset success, with votes from multi user": {
@@ -589,7 +589,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{"a"}},
 					{Answer: "Answer 3", Voter: []string{"1", "a", "z"}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "a",
 			ExpectedPoll: poll.Poll{
@@ -599,7 +599,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 2", Voter: []string{}},
 					{Answer: "Answer 3", Voter: []string{"1", "z"}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 		},
 		"invalid user id": {
@@ -609,7 +609,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 1", Voter: []string{"a"}},
 					{Answer: "Answer 2", Voter: []string{"a"}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 			UserID: "",
 			ExpectedPoll: poll.Poll{
@@ -618,7 +618,7 @@ func TestResetVotes(t *testing.T) {
 					{Answer: "Answer 1", Voter: []string{"a"}},
 					{Answer: "Answer 2", Voter: []string{"a"}},
 				},
-				Settings: poll.Settings{MaxVotes: 3},
+				Settings: poll.Settings{MultiVote: true},
 			},
 		},
 	} {
@@ -703,7 +703,7 @@ func TestGetMetadata(t *testing.T) {
 					Anonymous:       true,
 					Progress:        true,
 					PublicAddOption: true,
-					MaxVotes:        3,
+					MultiVote:       true,
 				},
 			},
 			UserID:     "c",

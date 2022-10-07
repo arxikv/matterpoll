@@ -129,7 +129,6 @@
   },
   "poll.button.resetVotes": {
     "hash": "sha1-4a61c63020a340f21d6986159f8c2dcce0f25a79",
-    "one": "Deine Stimme zurücksetzen",
     "other": "Deine Stimmen zurücksetzen"
   },
   "poll.endPost.answer.heading": {

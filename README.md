@@ -1,5 +1,11 @@
 # ![Matterpoll Logo](images/logo.svg)
 
+## WARNING
+
+This is a hacked version of the plugin! Tests will fail.
+
+## Overview
+
 [![Build Status](https://img.shields.io/circleci/project/github/matterpoll/matterpoll/master.svg)](https://circleci.com/gh/matterpoll/matterpoll)
 [![Code Coverage](https://img.shields.io/codecov/c/github/matterpoll/matterpoll/master.svg)](https://codecov.io/gh/matterpoll/matterpoll/branch/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/matterpoll/matterpoll)](https://goreportcard.com/report/github.com/matterpoll/matterpoll)
@@ -40,7 +46,7 @@ Poll Settings provide further customisation, e.g. `/poll "Is Matterpoll great?" 
 - `--anonymous`: Don't show who voted for what at the end
 - `--progress`: During the poll, show how many votes each answer option got
 - `--public-add-option`: Allow all users to add additional options
-- `--votes=X`: Allow users to vote for X options
+- `--multi-vote`: Allow users to vote for multiple options
 
 ## Localization
 

@@ -228,7 +228,7 @@ func TestHandleCreatePoll(t *testing.T) {
 	}
 	model.ParseSlackAttachment(expectedPostTwoOptions, pollWithTwoOptions.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	pollWithSettings := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, PublicAddOption: true, MaxVotes: 3})
+	pollWithSettings := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, PublicAddOption: true, MultiVote: true})
 	expectedPostWithSettings := &model.Post{
 		UserId:    testutils.GetBotUserID(),
 		ChannelId: channelID,
@@ -634,7 +634,7 @@ func TestHandleVote(t *testing.T) {
 	expectedPost2 := &model.Post{}
 	model.ParseSlackAttachment(expectedPost2, poll2Out.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	poll3In := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 2})
+	poll3In := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 	poll3Out := poll3In.Copy()
 	msg, err = poll3Out.UpdateVote("userID2", 0)
 	require.Nil(t, msg)
@@ -642,7 +642,7 @@ func TestHandleVote(t *testing.T) {
 	expectedPost3 := &model.Post{}
 	model.ParseSlackAttachment(expectedPost3, poll3Out.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	poll4In := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 2})
+	poll4In := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 	msg, err = poll4In.UpdateVote("userID1", 0)
 	require.Nil(t, msg)
 	require.Nil(t, err)
@@ -653,7 +653,7 @@ func TestHandleVote(t *testing.T) {
 	expectedPost4 := &model.Post{}
 	model.ParseSlackAttachment(expectedPost4, poll4Out.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	poll5In := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 2})
+	poll5In := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 	msg, err = poll5In.UpdateVote("userID1", 0)
 	require.Nil(t, msg)
 	require.Nil(t, err)
@@ -661,7 +661,7 @@ func TestHandleVote(t *testing.T) {
 	require.Nil(t, msg)
 	require.Nil(t, err)
 
-	poll6In := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 2})
+	poll6In := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 	poll6Out := poll6In.Copy()
 	msg, err = poll6Out.UpdateVote("userID2", 1)
 	require.Nil(t, msg)
@@ -669,7 +669,7 @@ func TestHandleVote(t *testing.T) {
 	expectedPost6 := &model.Post{}
 	model.ParseSlackAttachment(expectedPost6, poll6Out.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	poll7In := testutils.GetPollWithSettings(poll.Settings{Progress: true, MaxVotes: 1})
+	poll7In := testutils.GetPollWithSettings(poll.Settings{Progress: true, MultiVote: false})
 	msg, err = poll7In.UpdateVote("userID1", 0)
 	require.Nil(t, msg)
 	require.Nil(t, err)
@@ -1123,7 +1123,7 @@ func TestHandleResetVotes(t *testing.T) {
 			{Answer: "Answer 2", Voter: []string{}},
 			{Answer: "Answer 3", Voter: []string{}},
 		},
-		Settings: poll.Settings{Progress: true, MaxVotes: 3},
+		Settings: poll.Settings{Progress: true, MultiVote: true},
 	}
 
 	poll2WithVotesWithProgress := pollEmptyWithProgress.Copy()
@@ -1139,7 +1139,7 @@ func TestHandleResetVotes(t *testing.T) {
 			{Answer: "Answer 2", Voter: []string{}},
 			{Answer: "Answer 3", Voter: []string{}},
 		},
-		Settings: poll.Settings{MaxVotes: 3},
+		Settings: poll.Settings{MultiVote: true},
 	}
 
 	expectedPost := &model.Post{}
@@ -1753,7 +1753,7 @@ func TestHandleAddOptionConfirm(t *testing.T) {
 	expectedPost2 := &model.Post{}
 	model.ParseSlackAttachment(expectedPost2, poll2Out.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe"))
 
-	poll3In := testutils.GetPollWithVotesAndSettings(poll.Settings{Progress: true, MaxVotes: 2})
+	poll3In := testutils.GetPollWithVotesAndSettings(poll.Settings{Progress: true, MultiVote: true})
 	poll3In.PostID = postID
 	poll3Out := poll3In.Copy()
 	err = poll3Out.AddAnswerOption("New Option")

@@ -149,29 +149,29 @@ func TestUpgradeTo14(t *testing.T) {
 	t.Run("KVList succeeds", func(t *testing.T) {
 		oldPoll := poll.Poll{
 			ID:       model.NewId(),
-			Settings: poll.Settings{MaxVotes: 0},
+			Settings: poll.Settings{MultiVote: false},
 		}
 
 		migratedPoll := oldPoll
-		migratedPoll.Settings.MaxVotes = 1
+		migratedPoll.Settings.MultiVote = false
 
 		newPoll := poll.Poll{
 			ID:       model.NewId(),
-			Settings: poll.Settings{MaxVotes: 2},
+			Settings: poll.Settings{MultiVote: true},
 		}
 
 		failGetPoll := poll.Poll{
 			ID:       model.NewId(),
-			Settings: poll.Settings{MaxVotes: 0},
+			Settings: poll.Settings{MultiVote: false},
 		}
 
 		failSavePoll := poll.Poll{
 			ID:       model.NewId(),
-			Settings: poll.Settings{MaxVotes: 0},
+			Settings: poll.Settings{MultiVote: false},
 		}
 
 		migratedFailSavePoll := failSavePoll
-		migratedFailSavePoll.Settings.MaxVotes = 1
+		migratedFailSavePoll.Settings.MultiVote = false
 
 		keys := []string{
 			"foo",

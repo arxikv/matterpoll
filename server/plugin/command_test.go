@@ -230,7 +230,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 						"poll_id": testutils.GetPollID(),
 					},
 				}
-				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, MaxVotes: 1})
+				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, MultiVote: false})
 				actions := poll.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe")
 				model.ParseSlackAttachment(post, actions)
 				post.AddProp("card", poll.ToCard(testutils.GetBundle(), converter))
@@ -242,7 +242,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 				return api
 			},
 			SetupStore: func(store *mockstore.Store) *mockstore.Store {
-				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, MaxVotes: 1})
+				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, MultiVote: false})
 				store.PollStore.On("Insert", poll).Return(nil)
 				return store
 			},
@@ -262,7 +262,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 						"poll_id": testutils.GetPollID(),
 					},
 				}
-				poll := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 3})
+				poll := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 				actions := poll.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe")
 				model.ParseSlackAttachment(post, actions)
 
@@ -273,7 +273,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 				return api
 			},
 			SetupStore: func(store *mockstore.Store) *mockstore.Store {
-				poll := testutils.GetPollWithSettings(poll.Settings{MaxVotes: 3})
+				poll := testutils.GetPollWithSettings(poll.Settings{MultiVote: true})
 				store.PollStore.On("Insert", poll).Return(nil)
 				return store
 			},
@@ -293,7 +293,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 						"poll_id": testutils.GetPollID(),
 					},
 				}
-				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, MaxVotes: 1})
+				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, MultiVote: false})
 				actions := poll.ToPostActions(testutils.GetBundle(), root.Manifest.Id, "John Doe")
 				model.ParseSlackAttachment(post, actions)
 				post.AddProp("card", poll.ToCard(testutils.GetBundle(), converter))
@@ -305,7 +305,7 @@ func TestPluginExecuteCommand(t *testing.T) {
 				return api
 			},
 			SetupStore: func(store *mockstore.Store) *mockstore.Store {
-				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, MaxVotes: 1})
+				poll := testutils.GetPollWithSettings(poll.Settings{Progress: true, Anonymous: true, MultiVote: false})
 				store.PollStore.On("Insert", poll).Return(nil)
 				return store
 			},

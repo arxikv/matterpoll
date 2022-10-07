@@ -370,7 +370,7 @@ func (p *MatterpollPlugin) handleVote(vars map[string]string, request *model.Pos
 	}
 
 	prev := poll.Copy()
-	previouslyVoted := poll.HasVoted(userID)
+	//previouslyVoted := poll.HasVoted(userID)
 	msg, err := poll.UpdateVote(userID, optionNumber)
 	if msg != nil {
 		return &i18n.LocalizeConfig{DefaultMessage: msg}, nil, nil
@@ -392,28 +392,30 @@ func (p *MatterpollPlugin) handleVote(vars map[string]string, request *model.Pos
 		post.AddProp("card", poll.ToCard(p.bundle, p.ConvertUserIDToDisplayName))
 	}
 
-	if poll.IsMultiVote() {
-		// Multi Answer Mode
-		votedAnswers := poll.GetVotedAnswers(userID)
-		remains := poll.Settings.MaxVotes - len(votedAnswers)
-		return &i18n.LocalizeConfig{
-			DefaultMessage: &i18n.Message{
-				ID:    "response.vote.multi.updated",
-				One:   "Your vote has been counted. You have {{.Remains}} vote left.",
-				Few:   "Your vote has been counted. You have {{.Remains}} votes left.",
-				Many:  "Your vote has been counted. You have {{.Remains}} votes left.",
-				Other: "Your vote has been counted. You have {{.Remains}} votes left.",
-			},
-			TemplateData: map[string]interface{}{"Remains": remains},
-			PluralCount:  remains,
-		}, post, nil
-	}
+	/*	if poll.IsMultiVote() {
+			// Multi Answer Mode
+			votedAnswers := poll.GetVotedAnswers(userID)
+			remains := poll.Settings.MaxVotes - len(votedAnswers)
+			return &i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID:    "response.vote.multi.updated",
+					One:   "Your vote has been counted. You have {{.Remains}} vote left.",
+					Few:   "Your vote has been counted. You have {{.Remains}} votes left.",
+					Many:  "Your vote has been counted. You have {{.Remains}} votes left.",
+					Other: "Your vote has been counted. You have {{.Remains}} votes left.",
+				},
+				TemplateData: map[string]interface{}{"Remains": remains},
+				PluralCount:  remains,
+			}, post, nil
+		}
 
-	// Single Answer Mode
-	if previouslyVoted {
-		return &i18n.LocalizeConfig{DefaultMessage: responseVoteUpdated}, post, nil
-	}
-	return &i18n.LocalizeConfig{DefaultMessage: responseVoteCounted}, post, nil
+		// Single Answer Mode
+		if previouslyVoted {
+			return &i18n.LocalizeConfig{DefaultMessage: responseVoteUpdated}, post, nil
+		}
+		return &i18n.LocalizeConfig{DefaultMessage: responseVoteCounted}, post, nil*/
+
+	return &i18n.LocalizeConfig{DefaultMessage: responseVoteUpdated}, post, nil
 }
 
 func (p *MatterpollPlugin) publishPollMetadata(poll *poll.Poll, userID string) {

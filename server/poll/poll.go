@@ -3,8 +3,6 @@ package poll
 import (
 	"encoding/json"
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/mattermost/mattermost-server/v6/model"
@@ -13,12 +11,13 @@ import (
 	"github.com/matterpoll/matterpoll/server/utils"
 )
 
-var votesSettingPattern = regexp.MustCompile(`^votes=(\d+)$`)
+//var votesSettingPattern = regexp.MustCompile(`^votes=(\d+)$`)
 
 const (
 	SettingKeyAnonymous       = "anonymous"
 	SettingKeyProgress        = "progress"
 	SettingKeyPublicAddOption = "public-add-option"
+	SettingKeyMultiVote       = "multi-vote"
 )
 
 // Poll stores all needed information for a poll
@@ -43,7 +42,8 @@ type Settings struct {
 	Anonymous       bool
 	Progress        bool
 	PublicAddOption bool
-	MaxVotes        int `json:"max_votes"`
+	//MaxVotes        int `json:"max_votes"`
+	MultiVote bool
 }
 
 // NewPoll creates a new poll with the given parameter.
@@ -70,7 +70,8 @@ func NewPoll(creator, question string, answerOptions []string, settings Settings
 
 // NewSettingsFromStrings creates a new settings with the given parameter.
 func NewSettingsFromStrings(strs []string) (Settings, *utils.ErrorMessage) {
-	settings := Settings{MaxVotes: 1}
+	//settings := Settings{MaxVotes: 1}
+	settings := Settings{MultiVote: false}
 	for _, str := range strs {
 		switch {
 		case str == SettingKeyAnonymous:
@@ -79,12 +80,14 @@ func NewSettingsFromStrings(strs []string) (Settings, *utils.ErrorMessage) {
 			settings.Progress = true
 		case str == SettingKeyPublicAddOption:
 			settings.PublicAddOption = true
-		case votesSettingPattern.MatchString(str):
-			i, errMsg := parseVotesSettings(str)
-			if errMsg != nil {
-				return settings, errMsg
-			}
-			settings.MaxVotes = i
+			/*		case votesSettingPattern.MatchString(str):
+					i, errMsg := parseVotesSettings(str)
+					if errMsg != nil {
+						return settings, errMsg
+					}
+					settings.MaxVotes = i*/
+		case str == SettingKeyMultiVote:
+			settings.MultiVote = true
 		default:
 			return settings, &utils.ErrorMessage{
 				Message: &i18n.Message{
@@ -102,14 +105,16 @@ func NewSettingsFromStrings(strs []string) (Settings, *utils.ErrorMessage) {
 
 // NewSettingsFromSubmission creates a new settings with the given parameter.
 func NewSettingsFromSubmission(submission map[string]interface{}) Settings {
-	settings := Settings{MaxVotes: 1}
+	//settings := Settings{MaxVotes: 1}
+	settings := Settings{MultiVote: false}
 	for k, v := range submission {
-		if k == "setting-multi" {
-			f, ok := v.(float64)
-			if ok {
-				settings.MaxVotes = int(f)
-			}
-		} else if strings.HasPrefix(k, "setting-") {
+		/*		if k == "setting-multi" {
+				f, ok := v.(float64)
+				if ok {
+					settings.MaxVotes = int(f)
+				}
+			} else if strings.HasPrefix(k, "setting-") {*/
+		if strings.HasPrefix(k, "setting-") {
 			b, ok := v.(bool)
 			if b && ok {
 				s := strings.TrimPrefix(k, "setting-")
@@ -120,6 +125,8 @@ func NewSettingsFromSubmission(submission map[string]interface{}) Settings {
 					settings.Progress = true
 				case SettingKeyPublicAddOption:
 					settings.PublicAddOption = true
+				case SettingKeyMultiVote:
+					settings.MultiVote = true
 				}
 			}
 		}
@@ -128,7 +135,7 @@ func NewSettingsFromSubmission(submission map[string]interface{}) Settings {
 }
 
 // parseVotesSettings parses setting for votes ("--votes=X")
-func parseVotesSettings(s string) (int, *utils.ErrorMessage) {
+/*func parseVotesSettings(s string) (int, *utils.ErrorMessage) {
 	e := votesSettingPattern.FindStringSubmatch(s)
 	if len(e) != 2 {
 		return 0, &utils.ErrorMessage{
@@ -154,11 +161,11 @@ func parseVotesSettings(s string) (int, *utils.ErrorMessage) {
 		}
 	}
 	return i, nil
-}
+}*/
 
 // validate checks if poll is valid
 func (p *Poll) validate() *utils.ErrorMessage {
-	if p.Settings.MaxVotes <= 0 || p.Settings.MaxVotes > len(p.AnswerOptions) {
+	/*	if p.Settings.MaxVotes <= 0 || p.Settings.MaxVotes > len(p.AnswerOptions) {
 		return &utils.ErrorMessage{
 			Message: &i18n.Message{
 				ID:    "poll.newPoll.votesettings.invalidSetting",
@@ -169,13 +176,14 @@ func (p *Poll) validate() *utils.ErrorMessage {
 				"Options":  len(p.AnswerOptions),
 			},
 		}
-	}
+	}*/
 	return nil
 }
 
 // IsMultiVote return true if poll is set to multi vote
 func (p *Poll) IsMultiVote() bool {
-	return p.Settings.MaxVotes > 1
+	//return p.Settings.MaxVotes > 1
+	return p.Settings.MultiVote
 }
 
 // AddAnswerOption adds a new AnswerOption to a poll
@@ -219,35 +227,53 @@ func (p *Poll) UpdateVote(userID string, index int) (*i18n.Message, error) {
 		return nil, fmt.Errorf("invalid userID")
 	}
 
-	if p.IsMultiVote() {
-		// Multi Answer Mode
-		votedAnswers := p.GetVotedAnswers(userID)
-		for _, answer := range votedAnswers {
-			if answer == p.AnswerOptions[index].Answer {
+	/*	if p.IsMultiVote() {
+			// Multi Answer Mode
+			votedAnswers := p.GetVotedAnswers(userID)
+			for _, answer := range votedAnswers {
+				if answer == p.AnswerOptions[index].Answer {
+					return &i18n.Message{
+						ID:    "poll.updateVote.alreadyVoted",
+						Other: "You've already voted for this option.",
+					}, nil
+				}
+			}
+			if p.Settings.MaxVotes <= len(votedAnswers) {
 				return &i18n.Message{
-					ID:    "poll.updateVote.alreadyVoted",
-					Other: "You've already voted for this option.",
+					ID:    "poll.updateVote.maxVotes",
+					Other: "You could't vote for this option, because you don't have any votes left. Use the reset button to reset your votes.",
 				}, nil
 			}
+		} else {
+			// Single Answer Mode
+			for _, o := range p.AnswerOptions {
+				for i := 0; i < len(o.Voter); i++ {
+					if userID == o.Voter[i] {
+						o.Voter = append(o.Voter[:i], o.Voter[i+1:]...)
+					}
+				}
+			}
 		}
-		if p.Settings.MaxVotes <= len(votedAnswers) {
-			return &i18n.Message{
-				ID:    "poll.updateVote.maxVotes",
-				Other: "You could't vote for this option, because you don't have any votes left. Use the reset button to reset your votes.",
-			}, nil
-		}
-	} else {
-		// Single Answer Mode
-		for _, o := range p.AnswerOptions {
-			for i := 0; i < len(o.Voter); i++ {
-				if userID == o.Voter[i] {
-					o.Voter = append(o.Voter[:i], o.Voter[i+1:]...)
+
+		p.AnswerOptions[index].Voter = append(p.AnswerOptions[index].Voter, userID)*/
+
+	alreadyVoted := false
+	for i, option := range p.AnswerOptions {
+		for j := 0; j < len(option.Voter); j++ {
+			if userID == option.Voter[j] {
+				if i == index || !p.Settings.MultiVote {
+					option.Voter = append(option.Voter[:j], option.Voter[j+1:]...)
+				}
+				if i == index {
+					alreadyVoted = true
 				}
 			}
 		}
 	}
+	if !alreadyVoted {
+		p.AnswerOptions[index].Voter = append([]string{userID}, p.AnswerOptions[index].Voter...)
+	}
 
-	p.AnswerOptions[index].Voter = append(p.AnswerOptions[index].Voter, userID)
 	return nil, nil
 }
 

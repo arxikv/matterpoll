@@ -60,7 +60,7 @@ func GetPoll() *poll.Poll {
 			Answer: "Answer 3",
 			Voter:  []string{},
 		}},
-		Settings: poll.Settings{MaxVotes: 1},
+		Settings: poll.Settings{MultiVote: false},
 	}
 }
 
@@ -96,7 +96,7 @@ func GetPollWithVotes() *poll.Poll {
 			Answer: "Answer 3",
 			Voter:  []string{},
 		}},
-		Settings: poll.Settings{MaxVotes: 1},
+		Settings: poll.Settings{MultiVote: false},
 	}
 }
 
@@ -118,7 +118,7 @@ func GetPollWithVoteUnknownUser() *poll.Poll {
 			Answer: "Answer 3",
 			Voter:  []string{},
 		}},
-		Settings: poll.Settings{MaxVotes: 1},
+		Settings: poll.Settings{MultiVote: false},
 	}
 }
 
@@ -144,6 +144,6 @@ func GetPollTwoOptions() *poll.Poll {
 			Answer: "No",
 			Voter:  []string{},
 		}},
-		Settings: poll.Settings{MaxVotes: 1},
+		Settings: poll.Settings{MultiVote: false},
 	}
 }

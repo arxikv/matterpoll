@@ -2,6 +2,7 @@ package poll
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/mattermost/mattermost-server/v6/model"
@@ -17,6 +18,12 @@ const (
 
 // IDToNameConverter converts a given userID to a human readable name.
 type IDToNameConverter func(userID string) (string, *model.AppError)
+
+type VotesPerAnswer struct {
+	Answer       string
+	NumVotes     int
+	RecentVoters []string
+}
 
 var (
 	pollMessageSettings = &i18n.Message{
@@ -86,7 +93,7 @@ func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string) 
 	actions = append(actions,
 		&model.PostAction{
 			Id: "resetVote",
-			Name: bundle.LocalizeWithConfig(localizer, &i18n.LocalizeConfig{
+			/*Name: bundle.LocalizeWithConfig(localizer, &i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID:    "poll.button.resetVotes",
 					One:   "Reset your vote",
@@ -95,7 +102,11 @@ func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string) 
 					Other: "Reset your votes",
 				},
 				PluralCount: p.Settings.MaxVotes,
-			}),
+			}),*/
+			Name: bundle.LocalizeWithConfig(localizer, &i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
+				ID:    "poll.button.resetVotes",
+				Other: "Reset your votes",
+			}}),
 			Type:  model.PostActionTypeButton,
 			Style: "primary",
 			Integration: &model.PostActionIntegration{
@@ -152,26 +163,59 @@ func (p *Poll) ToPostActions(bundle *utils.Bundle, pluginID, authorName string) 
 // This method returns markdown text, because it is used for SlackAttachment.Text field.
 func (p *Poll) makeAdditionalText(bundle *utils.Bundle, numberOfVotes int) string {
 	localizer := bundle.GetServerLocalizer()
-	var settingsText []string
-	if p.Settings.Anonymous {
-		settingsText = append(settingsText, "anonymous")
-	}
-	if p.Settings.Progress {
-		settingsText = append(settingsText, "progress")
-	}
-	if p.Settings.PublicAddOption {
-		settingsText = append(settingsText, "public-add-option")
-	}
-	if p.Settings.MaxVotes > 1 {
-		settingsText = append(settingsText, fmt.Sprintf("votes=%d", p.Settings.MaxVotes))
-	}
+	/*	var settingsText []string
+		if p.Settings.Anonymous {
+			settingsText = append(settingsText, "anonymous")
+		}
+		if p.Settings.Progress {
+			settingsText = append(settingsText, "progress")
+		}
+		if p.Settings.PublicAddOption {
+			settingsText = append(settingsText, "public-add-option")
+		}
+		if p.Settings.MaxVotes > 1 {
+			settingsText = append(settingsText, fmt.Sprintf("votes=%d", p.Settings.MaxVotes))
+		}*/
 
 	lines := []string{"---"}
-	if len(settingsText) > 0 {
+	/*	if len(settingsText) > 0 {
 		lines = append(lines, bundle.LocalizeWithConfig(localizer, &i18n.LocalizeConfig{
 			DefaultMessage: pollMessageSettings,
 			TemplateData:   map[string]interface{}{"Settings": strings.Join(settingsText, ", ")},
 		}))
+	}*/
+
+	votesPerAnswer := make([]VotesPerAnswer, len(p.AnswerOptions))
+	for i, option := range p.AnswerOptions {
+		votesPerAnswer[i].Answer = option.Answer
+		votesPerAnswer[i].NumVotes = len(option.Voter)
+		votesPerAnswer[i].RecentVoters = option.Voter[:3]
+
+		for j, voter := range votesPerAnswer[i].RecentVoters {
+			votesPerAnswer[i].RecentVoters[j] = "@" + voter
+		}
+	}
+	sort.Slice(votesPerAnswer, func(i, j int) bool {
+		return votesPerAnswer[i].NumVotes > votesPerAnswer[j].NumVotes
+	})
+	for i, answerVotes := range votesPerAnswer {
+		answerInfo := fmt.Sprintf("%s: %d votes", answerVotes.Answer, answerVotes.NumVotes)
+		if i == 0 {
+			answerInfo = fmt.Sprintf(":crown: **%s**", answerInfo)
+		}
+		if answerVotes.NumVotes == 0 {
+			break
+		} else if answerVotes.NumVotes == 1 {
+			answerInfo += fmt.Sprintf(" (%s voted)", answerVotes.RecentVoters[0])
+		} else if answerVotes.NumVotes <= 3 {
+			answerInfo += fmt.Sprintf(" (%s and %s voted)",
+				strings.Join(answerVotes.RecentVoters[:2], ", "),
+				answerVotes.RecentVoters[answerVotes.NumVotes-1])
+		} else {
+			answerInfo += fmt.Sprintf(" (%s and %d more voted)",
+				strings.Join(answerVotes.RecentVoters, ", "), answerVotes.NumVotes-3)
+		}
+		lines = append(lines, answerInfo)
 	}
 
 	lines = append(lines, bundle.LocalizeWithConfig(localizer, &i18n.LocalizeConfig{

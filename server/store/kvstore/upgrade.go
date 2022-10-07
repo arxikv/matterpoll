@@ -102,12 +102,12 @@ func upgradeTo14(s *Store) error {
 				continue
 			}
 
-			if poll.Settings.MaxVotes > 0 {
+			/*if poll.Settings.MaxVotes > 0 {
 				// Already migrated
 				continue
 			}
 
-			poll.Settings.MaxVotes = 1
+			poll.Settings.MaxVotes = 1*/
 			err = s.Poll().Save(poll)
 			if err != nil {
 				s.api.LogError("Failed to save poll after migration", "error", err.Error(), "pollID", k)
